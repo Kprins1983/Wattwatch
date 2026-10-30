@@ -1,0 +1,49 @@
+{
+  "title": "WattWatch",
+  "config": {
+    "step": {
+      "user": {
+        "title": "WattWatch starten",
+        "description": "Klik op Verzenden. WattWatch ontdekt automatisch vermogenssensoren en leert minimaal 7 dagen. Je hoeft geen apparaten of helpers in te stellen. Meldingen verschijnen in Home Assistant. Het automatische overzicht vind je daarna op de apparaatpagina van WattWatch. Uitzonderingen kun je later aanpassen via Configureren."
+      }
+    },
+    "abort": {
+      "already_configured": "WattWatch is al ingesteld."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optionele instellingen",
+        "description": "Aanpassen is niet nodig. Uitsluiten gaat voor altijd opnemen. Alleen W, kW en mW worden gevolgd. Sensoren met negatieve waarden leveren geen meetgegevens op.",
+        "data": {
+          "notifications": "Meldingen in Home Assistant",
+          "excluded": "Deze sensoren uitsluiten",
+          "included": "Deze sensoren toch opnemen"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "overview": {
+        "name": "Gevolgde apparaten"
+      },
+      "appliance": {
+        "state": {
+          "learning": "Bezig met leren",
+          "normal": "Normaal",
+          "anomaly": "Afwijking",
+          "unavailable": "Geen meetgegevens",
+          "excluded": "Uitgesloten",
+          "insufficient_data": "Onvoldoende meetgegevens"
+        }
+      }
+    },
+    "binary_sensor": {
+      "anomaly": {
+        "name": "Afwijkend verbruik"
+      }
+    }
+  }
+}

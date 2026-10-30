@@ -1,0 +1,49 @@
+{
+  "title": "WattWatch",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Start WattWatch",
+        "description": "Submit to start. WattWatch discovers power sensors and learns for at least 7 days. No device selection or helpers are required. Alerts appear in Home Assistant. Open the WattWatch device page for the automatic overview. Exceptions can be changed later in Configure."
+      }
+    },
+    "abort": {
+      "already_configured": "WattWatch is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optional settings",
+        "description": "No changes are required. Exclusions override inclusions. Only W, kW and mW sensors are monitored. Negative readings are not sampled.",
+        "data": {
+          "notifications": "Alerts in Home Assistant",
+          "excluded": "Exclude these sensors",
+          "included": "Always include these sensors"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "overview": {
+        "name": "Monitored appliances"
+      },
+      "appliance": {
+        "state": {
+          "learning": "Learning",
+          "normal": "Normal",
+          "anomaly": "Anomaly",
+          "unavailable": "No readings",
+          "excluded": "Excluded",
+          "insufficient_data": "Insufficient readings"
+        }
+      }
+    },
+    "binary_sensor": {
+      "anomaly": {
+        "name": "Unusual consumption"
+      }
+    }
+  }
+}
