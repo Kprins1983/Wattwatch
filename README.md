@@ -1,5 +1,7 @@
 # WattWatch
 
+<p align="center"><img src="assets/wattwatch-logo.svg" alt="WattWatch" width="750"></p>
+
 **Automatically learns each device’s normal power use in Home Assistant and alerts you to sustained changes.**
 
 WattWatch discovers existing power sensors, builds a separate local baseline for each one, and flags sustained unusual hourly averages. Ordinary setup needs one confirmation. No YAML, helpers, cloud account, MQTT or Node-RED are needed. Existing appliance power sensors are required.
