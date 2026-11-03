@@ -69,4 +69,4 @@ class Appliance(MonitorEntity, SensorEntity):
         return {"source_entity": self.monitor.sources.get(self.key),
                 "learning_percent": profile.progress(dt_util.utcnow().timestamp()),
                 "learned_hours": len(profile.history),
-                **profile.last_evaluation}
+                **(profile.short_alert if not profile.anomaly and profile.short_alert else profile.last_evaluation)}

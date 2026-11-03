@@ -7,6 +7,9 @@ from homeassistant.helpers import selector
 from .const import DOMAIN, DEFAULTS, NAME
 
 
+from .engine import SENSITIVITY_MARGINS
+
+
 class WattWatchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
@@ -39,6 +42,10 @@ class WattWatchOptionsFlow(config_entries.OptionsFlow):
                 selector.SelectSelectorConfig(options=phones, multiple=True))
         return self.async_show_form(step_id="init", data_schema=vol.Schema({
             vol.Optional("notifications", default=options["notifications"]): bool,
+            vol.Required("sensitivity", default=options["sensitivity"]): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=list(SENSITIVITY_MARGINS),
+                                              mode=selector.SelectSelectorMode.DROPDOWN,
+                                              translation_key="sensitivity")),
             **phone_field,
             vol.Optional("excluded", default=options["excluded"]): sensor_selector,
             vol.Optional("included", default=options["included"]): sensor_selector,

@@ -80,7 +80,8 @@ class Monitor:
             profile = self.profiles[key]
             state = self.hass.states.get(self.sources[key])
             value = watts(state.state, state.attributes.get("unit_of_measurement")) if state else None
-            result = profile.sample(ts, value, local.hour, local.date().isoformat())
+            result = profile.sample(ts, value, local.hour, local.date().isoformat(),
+                                    sensitivity=self.options["sensitivity"])
             if result and result["status"] == "anomaly":
                 if self.options["notifications"] and ts - profile.last_alert >= DAY:
                     self.notify(key, result)
@@ -91,6 +92,9 @@ class Monitor:
             profile = self.profiles[key]
             profile.history = [r for r in profile.history if r["start"] >= ts - RETENTION]
             profile.reset_continuity()
+            profile.short_samples.clear()
+            profile.short_blocks.clear()
+            profile.short_alert.clear()
             profile.previous_time = profile.previous_watts = None
             profile.bucket = None
             profile.integral = profile.coverage = 0
@@ -108,20 +112,21 @@ class Monitor:
         name = state.name if state else eid
         nl = self.hass.config.language == "nl"
         high = result["direction"] == "high"
+        minutes = result.get("window_minutes", 120)
         if nl:
             direction = "hoger" if high else "lager"
             title = f"WattWatch: afwijkend verbruik — {name}"
-            message = (f"**{name}** heeft twee opeenvolgende volledige meeturen {direction} "
+            message = (f"**{name}** heeft gedurende ongeveer {minutes} minuten {direction} "
                        f"verbruik dan de gebruikelijke bandbreedte op vergelijkbare uren.\n\n"
-                       f"Laatste uurgemiddelde: **{result['average_watts']:.0f} W**. "
+                       f"Laatste gemeten gemiddelde: **{result['average_watts']:.0f} W**. "
                        f"Referentiemediaan: **{result['expected_watts']:.0f} W**.\n\n"
                        "Dit is een verandering in gemeten verbruik, geen vastgestelde storing.")
         else:
             direction = "higher" if high else "lower"
             title = f"WattWatch: unusual consumption — {name}"
-            message = (f"**{name}** used {direction} power than its usual range for two "
-                       f"consecutive measured hours at comparable times.\n\n"
-                       f"Latest hourly average: **{result['average_watts']:.0f} W**. "
+            message = (f"**{name}** used {direction} power than its usual range for about {minutes} minutes "
+                       f"compared with similar times.\n\n"
+                       f"Latest measured average: **{result['average_watts']:.0f} W**. "
                        f"Reference median: **{result['expected_watts']:.0f} W**.\n\n"
                        "This indicates a consumption change, not a diagnosed fault.")
         persistent_notification.async_create(self.hass, message, title, f"{DOMAIN}_{key}")

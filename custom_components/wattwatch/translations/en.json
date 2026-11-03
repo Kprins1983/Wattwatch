@@ -20,7 +20,8 @@
           "notifications": "Enable anomaly notifications",
           "excluded": "Exclude these sensors",
           "included": "Always include these sensors",
-          "phones": "Send push notifications to these phones"
+          "phones": "Send push notifications to these phones",
+          "sensitivity": "Sensitivity"
         }
       }
     }
@@ -44,6 +45,15 @@
     "binary_sensor": {
       "anomaly": {
         "name": "Unusual consumption"
+      }
+    }
+  },
+  "selector": {
+    "sensitivity": {
+      "options": {
+        "normal": "Normal",
+        "wide": "Wide",
+        "sensitive": "Sensitive"
       }
     }
   }

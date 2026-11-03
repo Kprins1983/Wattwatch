@@ -1,4 +1,5 @@
 """Bounded, local, deterministic hourly anomaly detector; no HA dependencies."""
+from __future__ import annotations
 from dataclasses import dataclass, field
 from math import isfinite
 from statistics import median
@@ -8,6 +9,7 @@ DAY = 86400
 RETENTION = 21 * DAY
 LEARNING = 7 * DAY
 MIN_HOURS = 120
+SENSITIVITY_MARGINS = {"normal": 1.0, "wide": 1.5, "sensitive": 0.5}
 
 
 def watts(value, unit):
@@ -31,6 +33,10 @@ def quantile(values, fraction):
 class Profile:
     """Store only completed hours; do not bridge outages or restart gaps."""
     history: list = field(default_factory=list)
+    short_history: list = field(default_factory=list)
+    short_samples: list = field(default_factory=list)
+    short_blocks: list = field(default_factory=list)
+    short_alert: dict = field(default_factory=dict)
     last_alert: float = 0
     first_seen: float = 0
     last_evaluation: dict = field(default_factory=dict)
@@ -49,12 +55,12 @@ class Profile:
     current_watts: float | None = None
 
     def dump(self):
-        return {"history": self.history, "last_alert": self.last_alert,
+        return {"history": self.history, "short_history": self.short_history, "last_alert": self.last_alert,
                 "first_seen": self.first_seen, "last_evaluation": self.last_evaluation}
 
     @classmethod
     def load(cls, data):
-        return cls(history=data.get("history", []),
+        return cls(history=data.get("history", []), short_history=data.get("short_history", []),
                    first_seen=data.get("first_seen", 0),
                    last_alert=data.get("last_alert", 0),
                    last_evaluation=data.get("last_evaluation", {}))
@@ -70,7 +76,7 @@ class Profile:
         self.consecutive = 0
         self.anomaly = False
 
-    def evaluate(self, record):
+    def evaluate(self, record, sensitivity="normal"):
         """Use earlier days at a similar local hour; never train on this record."""
         end = record["start"] + HOUR
         if end - self.first_seen < LEARNING or len(self.history) < MIN_HOURS:
@@ -86,7 +92,7 @@ class Profile:
         values = [r["watts"] for r in refs]
         center = median(values)
         mad = median(abs(v - center) for v in values)
-        margin = max(20, center * .5, 4 * mad)
+        margin = max(20, center * .5, 4 * mad) * SENSITIVITY_MARGINS[sensitivity]
         lower = max(0, quantile(values, .05) - margin)
         upper = quantile(values, .95) + margin
         direction = ("high" if record["watts"] > upper else
@@ -103,8 +109,64 @@ class Profile:
                 "upper_watts": round(upper, 2), "reference_hours": len(refs),
                 "evaluated_at": end}
 
-    def sample(self, now, value, local_hour, local_day):
+    def short_check(self, now, value, local_hour, local_day, sensitivity):
+        """Evaluate recent continuous ten-minute blocks against earlier windows."""
+        samples = self.short_samples
+        if value is None or not samples or not 0 < now - samples[-1][0] <= 90:
+            samples.clear()
+            self.short_blocks.clear()
+            self.short_alert = {}
+        if value is None:
+            return None
+        samples.append((now, value))
+        duration = now - samples[0][0]
+        if duration < 600:
+            return None
+
+        mean = sum(power * (end - start) for (start, power), (end, _)
+                   in zip(samples, samples[1:])) / duration
+        samples[:] = [(now, value)]
+        blocks = self.short_blocks
+        blocks.append(mean)
+        del blocks[:-6]
+        self.short_history = [r for r in self.short_history if r[0] >= now - RETENTION]
+        # Each stored row contains the end time, local hour/day and means
+        # for the 20, 30 and 60 minute windows available at that instant.
+        means = [sum(blocks[-n:]) / n if len(blocks) >= n else None for n in (2, 3, 6)]
+        ready = self.progress(now) == 100
+        had_alert = bool(self.short_alert)
+        self.short_alert = {}
+        for index, size in enumerate((2, 3, 6)):
+            average = means[index]
+            if not ready or average is None:
+                continue
+            refs = [r for r in self.short_history if r[2] != local_day
+                    and (r[1] - local_hour) % 24 in (0, 1, 23) and r[3 + index] is not None]
+            if len({r[2] for r in refs}) < 5:
+                continue
+            values = [r[3 + index] for r in refs]
+            center = median(values)
+            margin = max(2, center * .25) * SENSITIVITY_MARGINS[sensitivity]
+            lower, upper = max(0, min(values) - margin), max(values) + margin
+            recent = blocks[-size:]
+            if average > upper and min(recent) > center + margin:
+                direction = "high"
+            elif average < lower and max(recent) < center - margin:
+                direction = "low"
+            else:
+                continue
+            self.short_alert = dict(status="anomaly", direction=direction,
+                                    window_minutes=size * 10, average_watts=round(average, 2),
+                                    expected_watts=round(center, 2), lower_watts=round(lower, 2),
+                                    upper_watts=round(upper, 2), evaluated_at=now)
+            return self.short_alert
+        if not self.anomaly and any(v is not None for v in means):
+            self.short_history.append([now, local_hour, local_day, *means])
+        return {"status": "normal"} if had_alert else None
+
+    def sample(self, now, value, local_hour, local_day, sensitivity="normal"):
         """One sample/minute; time-weighted hold with a 90s maximum gap."""
+        short_result = self.short_check(now, value, local_hour, local_day, sensitivity)
         self.available = value is not None
         self.current_watts = value
         if not self.first_seen:
@@ -129,7 +191,7 @@ class Profile:
             if self.coverage >= 2700 and current_bucket == self.bucket + 1:
                 record = {"start": self.bucket * HOUR, "hour": self.bucket_hour,
                           "day": self.bucket_day, "watts": round(self.integral / self.coverage, 3)}
-                result = self.evaluate(record)
+                result = self.evaluate(record, sensitivity)
                 self.last_evaluation = result
                 # Quarantine even unconfirmed outliers to prevent learning away
                 # a persistent fault. A deliberate new regime needs a reset.
@@ -146,12 +208,16 @@ class Profile:
                 self.integral = self.previous_watts * seconds
                 self.coverage = seconds
         self.previous_time, self.previous_watts = now, value
-        return result
+        if self.anomaly:
+            return result
+        if self.short_alert:
+            return short_result if short_result else None
+        return result or short_result
 
     def status(self, now):
         if not self.available:
             return "unavailable"
-        if self.anomaly:
+        if self.anomaly or self.short_alert:
             return "anomaly"
         if self.progress(now) < 100 or self.last_evaluation.get("status") == "learning":
             return "learning"

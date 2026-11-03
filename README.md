@@ -8,7 +8,7 @@ English documentation below · [Nederlandse uitleg](#nederlandse-uitleg)
 
 WattWatch discovers existing appliance power sensors, learns their usual hourly consumption patterns and notifies you when measured power stays unusually high or low. Setup takes one confirmation; no helpers, YAML, MQTT, Node-RED, subscription or cloud account are needed for the monitoring itself.
 
-**Version 1.0.1 is a test release.** It needs real household testing and testing on current Home Assistant versions. A change in power consumption is a signal to investigate, not a diagnosis of a faulty appliance.
+**Version 1.1.0 is a test release.** It needs real household testing and testing on current Home Assistant versions. A change in power consumption is a signal to investigate, not a diagnosis of a faulty appliance.
 
 ## What WattWatch does
 
@@ -16,10 +16,10 @@ WattWatch discovers existing appliance power sensors, learns their usual hourly 
 - Builds a separate local history for each selected power channel.
 - Calculates time-weighted hourly averages instead of reacting to every short peak.
 - Compares completed hours with earlier days around the same local time.
-- Confirms an anomaly after two consecutive valid hours outside the normal band in the same direction.
+- Checks for sustained changes across 20, 30 and 60 minutes and two consecutive hours.
 - Creates an overview sensor, an overall problem sensor and individual appliance status sensors.
 - Shows these entities on the built-in WattWatch device page.
-- Posts persistent notifications inside Home Assistant.
+- Posts alerts in Home Assistant and can send push notifications to selected phones.
 - Saves learning data locally and restores completed-hour history after a restart.
 
 For example, a refrigerator that runs at unusually high power for several hours may trigger a notification after learning. A short kettle cycle is not the kind of change WattWatch is designed to detect. These are illustrative scenarios, not guaranteed detection outcomes.
@@ -86,7 +86,7 @@ The first assessment needs all of the following:
 
 An hour needs at least **45 minutes of valid coverage**. Unknown, unavailable, negative and non-finite readings do not count as zero. Long gaps interrupt continuity. Existing Home Assistant Recorder history is not imported, so learning starts when WattWatch starts collecting data.
 
-The comparison uses earlier days at the same local hour and the hour before/after. Its statistical band allows for normal variation. Two consecutive valid hours must fall outside that band in the same direction; a notification therefore generally takes about **2–3 hours of sustained change**, once enough reference data exists.
+Every ten minutes WattWatch checks continuous windows of approximately 20, 30 and 60 minutes against earlier windows of the same length around the same local hour. The average must exceed the historical range with a margin, and every ten-minute block must differ in the same direction from the usual level. Short windows require five earlier reference days in addition to the usual learning period. Existing installations retain hourly history and collect new short-window references after updating. The two-hour check continues alongside these checks.
 
 Notifications appear inside Home Assistant. There is a 24-hour notification cooldown per channel. The same persistent notification is updated instead of stacked and is dismissed after a normally evaluated hour. Restarting preserves reference history but resets the two-hour confirmation.
 
@@ -331,6 +331,16 @@ card:
 
 ## Sensor selection and settings
 
+Open **Settings → Devices & services → WattWatch → Configure → Sensitivity** and choose an option from the dropdown. One setting applies to all monitored appliances.
+
+| Setting | When WattWatch alerts |
+| --- | --- |
+| **Normal** (default) | Uses the standard margin around each appliance’s learned power range. |
+| **Wide** | Allows a larger deviation before alerting. Useful if ordinary usage changes often trigger alerts. |
+| **Sensitive** | Uses a smaller margin so that smaller sustained changes can trigger an alert. |
+
+The selected margin applies to the 20-, 30- and 60-minute checks and the two-hour check. All three settings use the same learning period and assessment windows.
+
 WattWatch uses naming clues to skip likely whole-home meters, solar generation, batteries and totals. Automatic selection is imperfect: Home Assistant does not provide a universal appliance-versus-total classification.
 
 Under the integration's **Configure** options you can:
@@ -345,7 +355,7 @@ Exclusion takes priority. Including a kWh sensor does not turn it into a power s
 
 WattWatch itself makes no cloud requests. Your existing smart plug or meter integrations may have their own network behavior.
 
-Up to 21 days of usable hourly averages are retained locally. Data is saved approximately every five minutes and on a normal reload. A power failure may lose the most recent unsaved data. The unfinished current hour is rebuilt after restarting.
+Up to 21 days of short-window and hourly averages are retained locally. Data is saved approximately every five minutes and on a normal reload. A power failure may lose the most recent unsaved data. The unfinished current hour is rebuilt after restarting.
 
 Removing the integration through Home Assistant removes WattWatch's stored learning data. Recorder history follows Home Assistant's normal retention settings. To deliberately learn a completely new baseline, remove and re-add the integration.
 
@@ -359,7 +369,7 @@ Removing the integration through Home Assistant removes WattWatch's stored learn
 | Missing HACS catalog icon | Check your HACS version and its local-brand support |
 | Dashboard says entity not found | Replace example entity IDs with the actual IDs from your installation |
 | No power chart | Use original numeric power sensors and check Recorder history |
-| No phone notification | Enable alerts, select a registered Companion App phone in Configure and check its notification permission |
+| Push notification did not arrive on the selected phone | Enable alerts, select a registered Companion App phone in Configure and check its notification permission |
 
 ## International availability and contributions
 
@@ -399,13 +409,25 @@ De schermteksten zijn beschikbaar in het Nederlands en Engels. Het bestaande ico
 
 WattWatch zoekt iedere minuut geschikte vermogenssensoren en leert per kanaal het gebruikelijke patroon. De eerste beoordeling vraagt minimaal zeven dagen, 120 bruikbare meeturen en voldoende vergelijkingen op eerdere dagen rond hetzelfde tijdstip. Ontbrekende meetgegevens kunnen dit verlengen. Bestaande Recorder-geschiedenis wordt niet ingelezen.
 
-Na twee opeenvolgende bruikbare uren met dezelfde afwijkingsrichting volgt een melding binnen Home Assistant. Een korte piek is niet het doel; een signaal is geen vastgestelde storing. Selecteer voor pushmeldingen je telefoon bij **Configureren** en geef de Companion-app toestemming voor meldingen.
+WattWatch beoordeelt elke tien minuten periodes van ongeveer 20, 30 en 60 minuten. Het vergelijkt deze met even lange periodes rond hetzelfde tijdstip op eerdere dagen. Een vroege melding vraagt een afwijkend gemiddelde én een aanhoudende verandering in dezelfde richting. Na de update blijven bestaande uurprofielen bruikbaar. De korte controles verzamelen eerst referenties op minstens vijf eerdere dagen en vereisen ook een voltooid basisprofiel. De controle over twee opeenvolgende uren blijft actief. Selecteer je telefoon bij **Configureren** voor pushmeldingen.
 
 ### Overzicht en kaarten
 
 Op de apparaatpagina staan **Gevolgde apparaten**, **Afwijkend verbruik** en de statussen per apparaat. Er wordt geen apart dashboard geïnstalleerd.
 
 De vormgegeven kaart hierboven gebruikt **Button Card** uit HACS. Pas `variables.overview_entity` aan naar je eigen WattWatch-overzichtssensor. Swipe Card, Card Mod en helpers zijn voor dit voorbeeld niet nodig. De vier eenvoudigere YAML-voorbeelden tonen een compact overzicht, leerstatus, vermogensgrafiek en een waarschuwing die alleen bij een afwijking verschijnt. Gebruik **Dashboard bewerken → Kaart toevoegen → Handmatig**. Vervang alle voorbeeld-entiteitsnamen door je eigen namen. Gebruik voor grafieken de oorspronkelijke vermogenssensoren; WattWatch-statussensoren bevatten tekst.
+
+### Gevoeligheid instellen
+
+Open **Instellingen → Apparaten & diensten → WattWatch → Configureren → Gevoeligheid**. Kies in het keuzemenu één stand voor alle bewaakte apparaten.
+
+| Stand | Wanneer krijg je een melding? |
+| --- | --- |
+| **Normaal** (standaard) | WattWatch gebruikt de standaardmarge rond het aangeleerde verbruiksbereik van elk apparaat. |
+| **Ruim** | Het verbruik mag verder afwijken. Handig wanneer gewone veranderingen in gebruik vaak een melding geven. |
+| **Gevoelig** | De marge is kleiner. Ook een kleinere verandering kan een melding geven als die aanhoudt. |
+
+De gekozen marge geldt voor de controles van 20, 30 en 60 minuten en voor de twee-uurscontrole. De leertijd en meetperiodes zijn bij alle drie de standen gelijk.
 
 ### Instellingen en beperkingen
 

@@ -20,7 +20,8 @@
           "notifications": "Afwijkingsmeldingen inschakelen",
           "excluded": "Deze sensoren uitsluiten",
           "included": "Deze sensoren toch opnemen",
-          "phones": "Pushmeldingen naar deze telefoons"
+          "phones": "Pushmeldingen naar deze telefoons",
+          "sensitivity": "Gevoeligheid"
         }
       }
     }
@@ -44,6 +45,15 @@
     "binary_sensor": {
       "anomaly": {
         "name": "Afwijkend verbruik"
+      }
+    }
+  },
+  "selector": {
+    "sensitivity": {
+      "options": {
+        "normal": "Normaal",
+        "wide": "Ruim",
+        "sensitive": "Gevoelig"
       }
     }
   }

@@ -1,4 +1,4 @@
-# WattWatch — testversie 1.0.1
+# WattWatch — testversie 1.1.0
 
 Automatisch veranderingen in het stroomverbruik van apparaten volgen in Home Assistant.
 
@@ -31,13 +31,15 @@ WattWatch leest eenmaal per minuut het actuele vermogen. Voor ieder verstreken k
 
 ## Wanneer volgt een melding?
 
-Twee opeenvolgende bruikbare klokuren moeten buiten de gebruikelijke bandbreedte liggen, in dezelfde richting. De vergelijking gebruikt eerdere dagen op ongeveer hetzelfde lokale uur (hetzelfde uur en het uur ervoor/erna). Daardoor komt een melding doorgaans pas na ongeveer 2 tot 3 uur aanhoudend afwijkend verbruik. Een korte piek is niet het doel van deze monitor.
+WattWatch beoordeelt elke tien minuten periodes van ongeveer 20, 30 en 60 minuten. Het vergelijkt deze met even lange periodes rond hetzelfde tijdstip op eerdere dagen. Een vroege melding vraagt een afwijkend gemiddelde én een aanhoudende verandering in dezelfde richting. Na de update blijven bestaande uurprofielen bruikbaar. De korte controles verzamelen eerst referenties op minstens vijf eerdere dagen en vereisen ook een voltooid basisprofiel. De controle over twee opeenvolgende uren blijft actief.
 
 Per apparaat geldt een meldingspauze van 24 uur. Dezelfde melding wordt daarna bijgewerkt in plaats van gestapeld. Na een normaal beoordeeld meetuur verdwijnt die melding vanzelf. Na een herstart begint de bevestiging van twee uur opnieuw; de referentiegeschiedenis blijft behouden.
 
 Dit is een eenvoudige, transparante statistische detector. Er is geen cloud-AI. De monitor houdt in deze versie geen rekening met buitentemperatuur, werkdag/weekend of het gekozen apparaatprogramma. Een afwijking is geen vastgestelde storing. Nieuwe gewoontes, vakanties of ander weer kunnen ook een signaal veroorzaken. Apparaten met grote normale variatie krijgen een brede bandbreedte; kleine afwijkingen kunnen daardoor onopgemerkt blijven.
 
 ## Alleen als een uitzondering nodig is
+
+Kies bij **Configureren → Gevoeligheid** tussen **Normaal** (standaard), **Ruim** (meer afwijking toestaan) en **Gevoelig** (kleinere afwijkingen melden). Eén keuze geldt voor alle apparaten en meetperiodes.
 
 Via **Configureren** bij de integratie kun je:
 
@@ -53,7 +55,7 @@ Zet bij **Configureren** meldingen aan en selecteer de gewenste telefoons. Allee
 
 ## Opslag, privacy en verwijderen
 
-De laatste maximaal 21 dagen aan bruikbare uurgemiddelden worden lokaal bewaard. Er wordt niets door WattWatch naar internet verstuurd. Opslag gebeurt circa iedere 5 minuten; bij normale herlading wordt de laatste stand ook opgeslagen. Bij stroomuitval kan het laatste onopgeslagen deel verloren gaan. Het lopende, nog niet voltooide meetuur wordt na een herstart opnieuw opgebouwd.
+De laatste maximaal 21 dagen aan korte gemiddelden en uurgemiddelden worden lokaal bewaard. Er wordt niets door WattWatch naar internet verstuurd. Opslag gebeurt circa iedere 5 minuten; bij normale herlading wordt de laatste stand ook opgeslagen. Bij stroomuitval kan het laatste onopgeslagen deel verloren gaan. Het lopende, nog niet voltooide meetuur wordt na een herstart opnieuw opgebouwd.
 
 Verwijder je de integratie via Apparaten & diensten, dan verwijdert WattWatch de eigen opgeslagen leergegevens. Eerder door Home Assistant Recorder bewaarde entiteitsgeschiedenis volgt de normale bewaartermijn van Home Assistant. Om alle patronen opnieuw te leren kun je de integratie verwijderen en opnieuw toevoegen.
 
