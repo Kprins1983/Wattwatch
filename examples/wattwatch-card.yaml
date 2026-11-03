@@ -1,0 +1,119 @@
+type: custom:button-card
+show_name: false
+show_icon: false
+show_state: false
+variables:
+  overview_entity: sensor.wattwatch_gevolgde_apparaten
+entity: '[[[ return variables.overview_entity; ]]]'
+triggers_update:
+  - '[[[ return variables.overview_entity; ]]]'
+tap_action:
+  action: more-info
+hold_action:
+  action: none
+styles:
+  card:
+    - height: 220px
+    - min-height: 220px
+    - max-height: 220px
+    - width: 100%
+    - min-width: 0
+    - box-sizing: border-box
+    - padding: 0
+    - border-radius: 24px
+    - overflow: hidden
+    - background: linear-gradient(145deg,#102239,#081525 85%)
+    - border: 1px solid rgba(94,217,186,.25)
+    - box-shadow: none
+  grid:
+    - grid-template-areas: '"content"'
+    - grid-template-columns: minmax(0,1fr)
+    - grid-template-rows: minmax(0,1fr)
+    - height: 100%
+    - min-width: 0
+  custom_fields:
+    content:
+      - width: 100%
+      - height: 100%
+      - min-width: 0
+      - white-space: normal
+extra_styles: >
+  :host{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box;}
+
+  #aspect-ratio,ha-card#card{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box;}
+
+  .watch{box-sizing:border-box;position:relative;isolation:isolate;overflow:hidden;width:100%;height:100%;padding:13px
+  11px 12px;display:grid;grid-template-rows:27px minmax(0,1fr) 48px
+  12px;gap:6px;text-align:left;color:#edf6ff;font-variant-numeric:tabular-nums;background:radial-gradient(ellipse
+  at 90% 20%,rgba(70,190,174,.14),transparent 70%);}
+
+  .watch *{box-sizing:border-box;}
+
+  .head{display:flex;align-items:center;gap:6px;min-width:0;}
+
+  .head>ha-icon{--mdc-icon-size:22px;color:#78dfc7;flex-shrink:0;}
+
+  .title{font-size:12px;font-weight:700;min-width:0;}
+
+  .head .swipe{margin-left:auto;--mdc-icon-size:15px;color:#819eb8;}
+
+  .hero{display:flex;align-items:center;justify-content:space-between;gap:3px;min-height:0;min-width:0;}
+
+  .reading{min-width:0;flex:1;}
+
+  .number{font-size:38px;line-height:1.05;font-weight:750;letter-spacing:-1px;color:var(--watch-accent);}
+
+  .number
+  small{font-size:10px;letter-spacing:0;font-weight:500;color:#b1c8da;margin-left:4px;}
+
+  .status{display:flex;align-items:center;gap:5px;color:var(--watch-accent);font-size:9px;line-height:1.35;margin-top:8px;}
+
+  .dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+
+  .shield{display:block;width:66px;height:76px;flex:0 0
+  66px;color:var(--watch-accent);}
+
+  .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px
+  solid #8daec22e;padding-top:8px;min-width:0;}
+
+  .metric{text-align:center;min-width:0;}
+
+  .metric+.metric{border-left:1px solid #8daec22e;}
+
+  .metric
+  strong{display:block;font-size:15px;line-height:1.1;font-weight:700;color:var(--metric-accent);}
+
+  .metric span{display:block;font-size:8px;color:#a7bdd5;margin-top:4px;}
+
+  .foot{display:flex;justify-content:space-between;gap:4px;align-items:center;font-size:8px;line-height:12px;color:#96aec7;min-width:0;}
+
+  .foot>span{white-space:nowrap;}
+
+  @media(max-width:600px){.watch{padding:12px
+  9px}.title{font-size:11px}.number{font-size:34px}.shield{width:58px;height:69px;flex-basis:58px}.number
+  small{font-size:9px}.head>ha-icon{--mdc-icon-size:20px}}
+custom_fields:
+  content: |
+    [[[
+      const overview = states[variables.overview_entity];
+      const known = overview && !['unknown', 'unavailable'].includes(overview.state);
+      const attrs = overview?.attributes || {};
+      const count = key => known && Number.isFinite(Number(attrs[key])) ? Number(attrs[key]) : null;
+      const found = known && Number.isFinite(Number(overview.state)) ? Number(overview.state) : null;
+      const learning = count('learning');
+      const active = count('normal');
+      const alerts = count('anomaly');
+      const excluded = known && attrs.excluded_sensors && typeof attrs.excluded_sensors === 'object'
+        ? Object.keys(attrs.excluded_sensors).length : null;
+      const display=n=>n===null?'—':n;
+      const accent=alerts>0?'#ffae93':learning>0?'#f2ce83':'#78dfc7';
+      const label=!known?'Waiting for data':alerts>0?'Unusual power detected':learning>0?'Learning patterns':active>0?'Monitoring patterns':excluded>0?'No monitored channels':'No monitored channels';
+      return `<div class="watch" style="--watch-accent:${accent}">
+        <div class="head"><ha-icon icon="mdi:shield-pulse-outline"></ha-icon><span class="title">WattWatch</span></div>
+        <div class="hero"><div class="reading"><div class="number">${display(found)}<small>monitored</small></div><div class="status"><span class="dot"></span>${label}</div></div>
+          <svg class="shield" viewBox="0 0 76 88" aria-hidden="true"><defs><linearGradient id="sw-glass" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#c2efe8" stop-opacity=".2"/><stop offset=".45" stop-color="#82bfc8" stop-opacity=".035"/><stop offset="1" stop-color="#092333" stop-opacity=".4"/></linearGradient></defs><circle cx="38" cy="44" r="33" fill="currentColor" opacity=".045"/><circle cx="38" cy="44" r="27" fill="none" stroke="currentColor" stroke-opacity=".12"/><path d="M38 10 63 20v24c0 17-11 28-25 34C24 72 13 61 13 44V20Z" fill="url(#sw-glass)" stroke="currentColor" stroke-width="1.4" stroke-opacity=".65"/><path d="M19 45h10l5-13 8 25 5-12h10" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="57" cy="45" r="2.4" fill="currentColor"/></svg>
+        </div>
+        <div class="metrics"><div class="metric" style="--metric-accent:#f2ce83"><strong>${display(learning)}</strong><span>Learning</span></div><div class="metric" style="--metric-accent:#78dfc7"><strong>${display(active)}</strong><span>Normal</span></div><div class="metric" style="--metric-accent:${alerts>0?'#ffae93':'#dce8f6'}"><strong>${display(alerts)}</strong><span>Anomalies</span></div></div>
+        <div class="foot"><span>${display(excluded)} excluded</span><span>Open details ›</span></div>
+      </div>`;
+    ]]]

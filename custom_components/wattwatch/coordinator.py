@@ -3,6 +3,7 @@ from datetime import timedelta
 import logging
 
 from homeassistant.components import persistent_notification
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -125,6 +126,18 @@ class Monitor:
                        "This indicates a consumption change, not a diagnosed fault.")
         persistent_notification.async_create(self.hass, message, title, f"{DOMAIN}_{key}")
         self.hass.bus.async_fire(f"{DOMAIN}_anomaly", {"entity_id": eid, **result})
+
+        for phone in self.options.get("phones", []):
+            if phone.startswith("mobile_app_") and self.hass.services.has_service("notify", phone):
+                self.hass.async_create_task(self.send_push(phone, title, message))
+
+    async def send_push(self, phone, title, message):
+        try:
+            await self.hass.services.async_call(
+                "notify", phone, {"title": title, "message": message.replace("**", "")},
+                blocking=True)
+        except HomeAssistantError as err:
+            _LOGGER.warning("Could not send WattWatch alert to %s: %s", phone, err)
 
     def state(self, key):
         if key not in self.selected:

@@ -1,4 +1,4 @@
-# WattWatch — eerste testversie 0.1.0
+# WattWatch — testversie 1.0.1
 
 Automatisch veranderingen in het stroomverbruik van apparaten volgen in Home Assistant.
 
@@ -49,7 +49,7 @@ Uitsluiten heeft voorrang. Sensoren moeten geschikte eenheden houden; opnemen ma
 
 Automatisch filteren is niet foutloos: Home Assistant heeft geen universeel veld dat zegt of een vermogenssensor een heel huis, een batterij of een enkel apparaat meet. Onherkenbaar benoemde totaalsensoren kunnen daarom toch worden meegenomen. Ook dubbele sensoren zijn niet altijd automatisch herkenbaar. Alleen duidelijke gelijknamige aliassen op hetzelfde geregistreerde apparaat worden samengevoegd. Meerdere kanalen van één apparaat blijven afzonderlijk beschikbaar.
 
-**De eerste versie meldt binnen Home Assistant. Telefoon-pushmeldingen zijn nog niet ingebouwd.** Alle benodigde onderdelen voor deze functies zitten in het pakket; er hoeft geen meldingsautomatisering te worden gemaakt.
+Zet bij **Configureren** meldingen aan en selecteer de gewenste telefoons. Alleen geregistreerde Home Assistant Companion-apps met een mobiele meldingsdienst verschijnen in de lijst. Geef de app op de telefoon toestemming voor meldingen.
 
 ## Opslag, privacy en verwijderen
 

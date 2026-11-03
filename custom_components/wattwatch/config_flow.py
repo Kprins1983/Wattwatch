@@ -30,8 +30,16 @@ class WattWatchOptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
         sensor_selector = selector.EntitySelector(selector.EntitySelectorConfig(
             domain="sensor", multiple=True))
+        phones = sorted(name for name in self.hass.services.async_services().get("notify", {})
+                        if name.startswith("mobile_app_"))
+        phone_field = {}
+        if phones:
+            selected = [name for name in options.get("phones", []) if name in phones]
+            phone_field[vol.Optional("phones", default=selected)] = selector.SelectSelector(
+                selector.SelectSelectorConfig(options=phones, multiple=True))
         return self.async_show_form(step_id="init", data_schema=vol.Schema({
             vol.Optional("notifications", default=options["notifications"]): bool,
+            **phone_field,
             vol.Optional("excluded", default=options["excluded"]): sensor_selector,
             vol.Optional("included", default=options["included"]): sensor_selector,
         }))

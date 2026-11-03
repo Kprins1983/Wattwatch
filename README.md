@@ -8,7 +8,7 @@ English documentation below · [Nederlandse uitleg](#nederlandse-uitleg)
 
 WattWatch discovers existing appliance power sensors, learns their usual hourly consumption patterns and notifies you when measured power stays unusually high or low. Setup takes one confirmation; no helpers, YAML, MQTT, Node-RED, subscription or cloud account are needed for the monitoring itself.
 
-**Version 0.1.0 is a test release.** It needs real household testing and testing on current Home Assistant versions. A change in power consumption is a signal to investigate, not a diagnosis of a faulty appliance.
+**Version 1.0.1 is a test release.** It needs real household testing and testing on current Home Assistant versions. A change in power consumption is a signal to investigate, not a diagnosis of a faulty appliance.
 
 ## What WattWatch does
 
@@ -90,7 +90,7 @@ The comparison uses earlier days at the same local hour and the hour before/afte
 
 Notifications appear inside Home Assistant. There is a 24-hour notification cooldown per channel. The same persistent notification is updated instead of stacked and is dismissed after a normally evaluated hour. Restarting preserves reference history but resets the two-hour confirmation.
 
-**Phone push notifications are not built in.** The integration does not currently account for outdoor temperature, weekdays versus weekends or appliance program selection.
+For phone push, enable notifications in **Configure** and select the registered Companion App phones. Allow notifications on each phone. The integration does not currently account for outdoor temperature, weekdays versus weekends or appliance program selection.
 
 ## Automatic overview
 
@@ -359,7 +359,7 @@ Removing the integration through Home Assistant removes WattWatch's stored learn
 | Missing HACS catalog icon | Check your HACS version and its local-brand support |
 | Dashboard says entity not found | Replace example entity IDs with the actual IDs from your installation |
 | No power chart | Use original numeric power sensors and check Recorder history |
-| No phone notification | This release provides persistent Home Assistant notifications, not phone push |
+| No phone notification | Enable alerts, select a registered Companion App phone in Configure and check its notification permission |
 
 ## International availability and contributions
 
@@ -399,7 +399,7 @@ De schermteksten zijn beschikbaar in het Nederlands en Engels. Het bestaande ico
 
 WattWatch zoekt iedere minuut geschikte vermogenssensoren en leert per kanaal het gebruikelijke patroon. De eerste beoordeling vraagt minimaal zeven dagen, 120 bruikbare meeturen en voldoende vergelijkingen op eerdere dagen rond hetzelfde tijdstip. Ontbrekende meetgegevens kunnen dit verlengen. Bestaande Recorder-geschiedenis wordt niet ingelezen.
 
-Na twee opeenvolgende bruikbare uren met dezelfde afwijkingsrichting volgt een melding binnen Home Assistant. Een korte piek is niet het doel; een signaal is geen vastgestelde storing. Telefoon-pushmeldingen zijn in deze versie niet ingebouwd.
+Na twee opeenvolgende bruikbare uren met dezelfde afwijkingsrichting volgt een melding binnen Home Assistant. Een korte piek is niet het doel; een signaal is geen vastgestelde storing. Selecteer voor pushmeldingen je telefoon bij **Configureren** en geef de Companion-app toestemming voor meldingen.
 
 ### Overzicht en kaarten
 
