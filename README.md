@@ -108,6 +108,10 @@ Individual status sensor attributes include `source_entity`, `learning_percent` 
 
 ## Dashboard card examples
 
+<p align="center"><img src="assets/wattwatch-dashboard-example.png" alt="WattWatch dashboard concept showing monitored channels and learning status" width="350"></p>
+
+*Dashboard concept — this custom card is not installed automatically. The examples below use standard Home Assistant cards and have a different appearance.*
+
 These examples use **built-in Home Assistant cards**. No additional frontend plugin is required. They are optional; WattWatch does not install them automatically.
 
 **Replace every example entity ID with your own.** Entity IDs depend on the installation language, source sensor names and any renaming. Find them under **Developer tools → States** or on the WattWatch device page. For an appliance status entity, its `source_entity` attribute identifies the original power sensor.
