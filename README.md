@@ -1,6 +1,6 @@
 # WattWatch
 
-<p align="center"><img src="assets/wattwatch-logo.svg" alt="WattWatch" width="750"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Kprins1983/Wattwatch/v1.1.0/assets/wattwatch-logo.svg" alt="WattWatch" width="750"></p>
 
 **Local power monitoring for Home Assistant: learn normal appliance usage and notice sustained changes.**
 
@@ -108,7 +108,7 @@ Individual status sensor attributes include `source_entity`, `learning_percent` 
 
 ## Dashboard card examples
 
-<p align="center"><img src="assets/image.png" alt="WattWatch dashboard concept showing monitored channels and learning status" width="350"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Kprins1983/Wattwatch/v1.1.0/assets/image.png" alt="WattWatch dashboard concept showing monitored channels and learning status" width="350"></p>
 
 *Custom dashboard design. The standalone example below uses this design with WattWatch’s own sensor attributes; the screenshot shows the original Dutch helper-based card. The card is not installed automatically.*
 
