@@ -1,17 +1,17 @@
 {
   "domain": "wattwatch",
   "name": "WattWatch",
-  "config_flow": true,
   "codeowners": [
     "@Kprins1983"
   ],
+  "config_flow": true,
   "dependencies": [
     "persistent_notification"
   ],
   "documentation": "https://github.com/Kprins1983/Wattwatch",
   "integration_type": "service",
-  "issue_tracker": "https://github.com/Kprins1983/Wattwatch/issues",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Kprins1983/Wattwatch/issues",
   "requirements": [],
   "version": "0.1.0"
 }
