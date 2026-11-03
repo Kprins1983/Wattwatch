@@ -19,7 +19,7 @@ WattWatch discovers existing appliance power sensors, learns their usual hourly 
 - Confirms an anomaly after two consecutive valid hours outside the normal band in the same direction.
 - Creates an overview sensor, an overall problem sensor and individual appliance status sensors.
 - Shows these entities on the built-in WattWatch device page.
-- Posts persistent notifications inside Home Assistant.
+- Posts alerts in Home Assistant and can send push notifications to selected phones.
 - Saves learning data locally and restores completed-hour history after a restart.
 
 For example, a refrigerator that runs at unusually high power for several hours may trigger a notification after learning. A short kettle cycle is not the kind of change WattWatch is designed to detect. These are illustrative scenarios, not guaranteed detection outcomes.
@@ -359,7 +359,7 @@ Removing the integration through Home Assistant removes WattWatch's stored learn
 | Missing HACS catalog icon | Check your HACS version and its local-brand support |
 | Dashboard says entity not found | Replace example entity IDs with the actual IDs from your installation |
 | No power chart | Use original numeric power sensors and check Recorder history |
-| No phone notification | Enable alerts, select a registered Companion App phone in Configure and check its notification permission |
+| Push notification did not arrive on the selected phone | Enable alerts, select a registered Companion App phone in Configure and check its notification permission |
 
 ## International availability and contributions
 
